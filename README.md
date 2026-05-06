@@ -1,6 +1,6 @@
 # RouteForge
 
-A lightweight, browser-based GPX route editor for planning cycling and running routes. No installation required — open `index.html` and start drawing.
+A lightweight, browser-based GPX route editor for planning cycling and running routes. No installation required — open `index.html` and start drawing. 
 
 ![RouteForge](https://img.shields.io/badge/version-1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
