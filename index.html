@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RouteForge</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2300ADB5'/><path d='M5 25C9 25 9 9 16 9S23 25 27 25' stroke='white' stroke-width='2.8' stroke-linecap='round' fill='none'/><circle cx='5' cy='25' r='2.5' fill='white'/><circle cx='27' cy='25' r='2.5' fill='white'/></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <style>/* styles live in css/main.css */</style>
+</head>
+<body>
+
+  <!-- ══ FULL-SCREEN MAP ══════════════════════════════ -->
+  <div id="map-container">
+    <div id="map"></div>
+    <div id="point-overlay" class="hidden">
+      <div class="po-card">
+        <button id="point-delete-btn" class="po-btn po-del" title="Delete Point">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
+        <div class="po-sep"></div>
+        <button id="point-info-btn" class="po-btn po-inf" title="Point Info">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/>
+          </svg>
+        </button>
+      </div>
+      <div class="po-stem"></div>
+    </div>
+  </div>
+
+  <!-- ══ LEFT STACK (title + toolbar) ════════════════ -->
+  <div id="left-stack">
+
+    <!-- Title panel -->
+    <div id="title-panel" class="fp">
+      <div class="lp-logo">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="7" fill="#00ADB5"/>
+          <path d="M5 25C9 25 9 9 16 9S23 25 27 25" stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+          <circle cx="5" cy="25" r="2.5" fill="white"/>
+          <circle cx="27" cy="25" r="2.5" fill="white"/>
+        </svg>
+        <div>
+          <div class="logo-name">RouteForge</div>
+          <div class="logo-ver">GPX Route Editor &amp; Planner</div>
+        </div>
+      </div>
+      <div class="lp-desc">
+        지도 위에서 직접 경로를 설계하고 편집하세요. 웨이포인트를 추가·이동·삭제하고, 완성된 루트를 GPX 파일로 내보내 GPS 기기나 피트니스 앱에서 바로 사용할 수 있습니다.
+      </div>
+      <div class="lp-mode">
+        <div class="mode-seg">
+          <button id="btn-mode-edit" class="ms-btn mode-btn" data-mode="edit">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Edit
+          </button>
+          <button id="btn-mode-view" class="ms-btn mode-btn" data-mode="view">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
+            </svg>
+            View
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar panel — vertical single column -->
+    <div id="left-panel" class="fp">
+      <button id="btn-add-marker" class="tb-btn tb-accent" title="Add Marker (M)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.69 2 6 4.69 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.31-2.69-6-6-6z"/>
+          <circle cx="12" cy="8" r="2" fill="currentColor" stroke="none"/>
+          <line x1="12" y1="22" x2="12" y2="20" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="tb-hsep"></div>
+      <button id="btn-open" class="tb-btn" title="Open GPX File">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+      </button>
+      <button id="btn-save" class="tb-btn" title="Save GPX File">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+      </button>
+      <div class="tb-hsep"></div>
+      <button id="btn-undo" class="tb-btn" title="Undo (Ctrl+Z)" disabled>
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6M3 10l6-6"/>
+        </svg>
+      </button>
+      <button id="btn-redo" class="tb-btn" title="Redo (Ctrl+Y)" disabled>
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6M21 10l-6-6"/>
+        </svg>
+      </button>
+      <button id="btn-clear" class="tb-btn tb-danger" title="Clear All Points">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </button>
+    </div>
+
+  </div><!-- /#left-stack -->
+
+  <!-- ══ TOP CENTER BAR ════════════════════════════════ -->
+  <div class="top-bar fp">
+
+    <!-- My Location -->
+    <button id="btn-my-location" title="My Location">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+      </svg>
+    </button>
+
+    <div class="tb-vsep"></div>
+
+    <!-- Distance label toggle -->
+    <button id="btn-label-dist" class="tb-icon-toggle" title="Show Segment Distances">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <rect x="2" y="8" width="20" height="8" rx="1.5"/>
+        <path stroke-linecap="round" d="M6 8v3M9 8v2M12 8v3M15 8v2M18 8v3"/>
+      </svg>
+    </button>
+
+    <!-- Angle label toggle -->
+    <button id="btn-label-angle" class="tb-icon-toggle" title="Show Climb Angles">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h14M4 20L19 6M4 14v6"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 17a5 5 0 015-5"/>
+      </svg>
+    </button>
+
+    <div class="tb-vsep"></div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg class="search-ico" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search address…" />
+      <div id="search-results"></div>
+    </div>
+
+    <div class="tb-vsep"></div>
+
+    <!-- Layer switcher -->
+    <div class="layer-wrap">
+      <button id="layer-toggle-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4"/>
+        </svg>
+        Layers
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:10px;height:10px">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div id="layer-dropdown" class="hidden">
+        <button class="layer-opt" data-layer="standard"><span class="layer-dot hidden"></span>Standard</button>
+        <button class="layer-opt" data-layer="cycle"><span class="layer-dot hidden"></span>Cycle Map</button>
+        <button class="layer-opt" data-layer="terrain"><span class="layer-dot hidden"></span>Terrain</button>
+        <button class="layer-opt" data-layer="satellite"><span class="layer-dot hidden"></span>Satellite</button>
+        <button class="layer-opt" data-layer="carto"><span class="layer-dot hidden"></span>Carto Grey</button>
+      </div>
+    </div>
+
+  </div><!-- /.top-bar -->
+
+  <!-- ══ ZOOM PANEL ════════════════════════════════════ -->
+  <div id="zoom-panel" class="fp">
+    <button id="btn-zoom-in" class="zoom-btn" title="Zoom In (+)">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+    </button>
+    <div class="zoom-vsep"></div>
+    <button id="btn-zoom-out" class="zoom-btn" title="Zoom Out (−)">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ══ MAP HINT ══════════════════════════════════════ -->
+  <div id="map-hint">
+    <div>Click to add points · Drag to move · Hover line to insert</div>
+  </div>
+
+  <!-- ══ BOTTOM PANEL (centered) ══════════════════════ -->
+  <div id="elevation-panel" class="fp">
+    <!-- Elevation chart (hidden until Analyze clicked) -->
+    <div id="elevation-chart-area" class="hidden">
+      <canvas id="elevation-chart-canvas"></canvas>
+      <div id="elevation-empty">Draw a route and click "Analyze Elevation" to see the profile</div>
+      <button id="btn-panel-toggle" title="Close Elevation Panel">
+        <svg id="panel-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Stats bar (always visible) -->
+    <div class="bp-bar">
+      <div class="bp-field">
+        <div class="bp-stat-lbl">Route Name</div>
+        <input id="route-name" type="text" value="My Route" placeholder="Route name…" />
+      </div>
+      <div class="bp-field">
+        <div class="bp-stat-lbl">Activity</div>
+        <div class="act-toggle">
+        <button id="btn-cycling" class="activity-btn act-btn" data-activity="cycling" title="Cycling">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6a1 1 0 100-2 1 1 0 000 2zm-3 11.5L9 11l3-3 2.5 4H18"/>
+          </svg>
+        </button>
+        <button id="btn-running" class="activity-btn act-btn" data-activity="running" title="Running">
+          <svg fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="4 1 15 22">
+            <circle cx="12" cy="3.5" r="2.2" fill="currentColor" stroke="none"/>
+            <path d="M12 5.7 L11 12"/>
+            <path d="M11.5 8 L6.5 14"/>
+            <path d="M11.5 8 L16.5 14"/>
+            <path d="M11 12 L15 22"/>
+            <path d="M11 12 L7 22"/>
+          </svg>
+        </button>
+        </div>
+      </div>
+      <div class="bp-div"></div>
+      <div class="bp-stats">
+        <div class="bp-stat">
+          <div class="bp-stat-lbl">Distance</div>
+          <div class="bp-stat-val" id="stat-distance">0.00 km</div>
+        </div>
+        <div class="bp-stat">
+          <div class="bp-stat-lbl">Est. Time</div>
+          <div class="bp-stat-val" id="stat-time">—</div>
+        </div>
+        <div class="bp-stat">
+          <div class="bp-stat-lbl">Elev. Gain</div>
+          <div class="bp-stat-val" id="stat-gain">—</div>
+        </div>
+        <div class="bp-stat">
+          <div class="bp-stat-lbl">Elev. Loss</div>
+          <div class="bp-stat-val" id="stat-loss">—</div>
+        </div>
+        <div class="bp-stat">
+          <div class="bp-stat-lbl">Max Ele</div>
+          <div class="bp-stat-val" id="stat-max-ele">—</div>
+        </div>
+      </div>
+      <button id="btn-analyze">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Analyze Elevation
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ TOAST ════════════════════════════════════════ -->
+  <div id="toast-container"></div>
+
+  <!-- Hidden file input -->
+  <input id="file-input" type="file" accept=".gpx" style="display:none" />
+
+  <!-- ══ MARKER MODAL ══════════════════════════════════ -->
+  <div id="marker-modal" class="hidden modal-wrap">
+    <div class="modal-bg" id="marker-modal-backdrop"></div>
+    <div class="modal-card" style="width:300px">
+      <div class="modal-title" style="margin-bottom:18px">Edit Marker</div>
+      <div class="form-grp">
+        <label class="form-lbl">Type</label>
+        <select id="marker-type" class="kp-sel">
+          <option value="start">Start</option>
+          <option value="finish">Finish</option>
+          <option value="checkpoint">Checkpoint</option>
+          <option value="water">Water / Food</option>
+          <option value="warning">Warning</option>
+        </select>
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">Name</label>
+        <input id="marker-name" class="kp-sel" type="text" placeholder="e.g. Water stop at km 15" />
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">Note</label>
+        <textarea id="marker-note" class="kp-ta" rows="2" placeholder="Optional note…"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="marker-delete" class="btn-dang">Delete</button>
+        <div style="flex:1"></div>
+        <button id="marker-cancel" class="btn-ghost">Cancel</button>
+        <button id="marker-save" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ POINT INFO MODAL ══════════════════════════════ -->
+  <div id="point-info-modal" class="hidden modal-wrap">
+    <div class="modal-bg" id="point-info-backdrop"></div>
+    <div class="modal-card" style="width:260px">
+      <div class="modal-hdr">
+        <span class="modal-title">Point Info</span>
+        <button id="point-info-close" class="modal-close">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="point-info-content"></div>
+    </div>
+  </div>
+
+  <!-- ══ RESTORE BANNER ════════════════════════════════ -->
+  <div id="restore-banner" class="hidden">
+    <div class="restore-card">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <span>You have an unsaved session. <strong>Restore it?</strong></span>
+      <button id="restore-yes" class="btn-primary" style="padding:5px 12px;font-size:11px">Restore</button>
+      <button id="restore-no" class="btn-ghost" style="padding:5px 10px;font-size:11px">Dismiss</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/utils/geo.js"></script>
+  <script src="js/utils/stats.js"></script>
+  <script src="js/gpx.js"></script>
+  <script src="js/models/route-model.js"></script>
+  <script src="js/renderers/route-renderer.js"></script>
+  <script src="js/elevation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/controllers/file-controller.js"></script>
+  <script src="js/controllers/session-controller.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

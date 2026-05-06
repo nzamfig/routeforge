@@ -1,0 +1,20 @@
+# Claude
+.claude/
+
+# Planning docs
+PLAN.md
+
+# Test files
+test_browser.py
+test-browser.mjs
+test*.py
+test*.mjs
+
+# Node
+node_modules/
+package.json
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
